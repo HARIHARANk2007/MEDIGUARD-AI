@@ -1,0 +1,28 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Python virtual environment
+venv/
+.venv/
+env/
+.env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+*.db
+*.sqlite
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
