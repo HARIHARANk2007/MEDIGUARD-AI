@@ -1,11 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import AlertCard from '../components/AlertCard'
-import { analyzeInteraction as analyzeService } from '../services'
+import { analyzeInteraction as analyzeService, searchDrugs } from '../services'
 
 export default function DrugChecker(){
   const [drugA, setDrugA] = useState('')
+  const [suggestionsA, setSuggestionsA] = useState([])
+  const [showA, setShowA] = useState(false)
+
   const [drugB, setDrugB] = useState('')
+  const [suggestionsB, setSuggestionsB] = useState([])
+  const [showB, setShowB] = useState(false)
+
   const [age, setAge] = useState('')
   const [weight, setWeight] = useState('')
   const [kidney, setKidney] = useState('normal')
@@ -15,6 +21,42 @@ export default function DrugChecker(){
   const [geriatric, setGeriatric] = useState(false)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  // Debounced search for Drug A
+  useEffect(() => {
+    const term = drugA.trim()
+    if (term.length < 1) {
+      setSuggestionsA([])
+      return
+    }
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const results = await searchDrugs(term)
+        setSuggestionsA(results)
+      } catch (err) {
+        console.error(err)
+      }
+    }, 150)
+    return () => clearTimeout(delayDebounce)
+  }, [drugA])
+
+  // Debounced search for Drug B
+  useEffect(() => {
+    const term = drugB.trim()
+    if (term.length < 1) {
+      setSuggestionsB([])
+      return
+    }
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const results = await searchDrugs(term)
+        setSuggestionsB(results)
+      } catch (err) {
+        console.error(err)
+      }
+    }, 150)
+    return () => clearTimeout(delayDebounce)
+  }, [drugB])
 
   async function handleSubmit(e){
     e.preventDefault()
@@ -36,7 +78,11 @@ export default function DrugChecker(){
 
   function handleReset(){
     setDrugA('')
+    setSuggestionsA([])
+    setShowA(false)
     setDrugB('')
+    setSuggestionsB([])
+    setShowB(false)
     setAge('')
     setWeight('')
     setKidney('normal')
@@ -73,16 +119,68 @@ export default function DrugChecker(){
                 <div className="space-y-4">
                   <div>
                     <label className="block font-label-md text-on-surface-variant mb-1 uppercase tracking-wider">Primary Medication</label>
-                    <div className="relative flex items-center">
-                      <span className="material-symbols-outlined absolute left-3 text-outline">search</span>
-                      <input value={drugA} onChange={e=>setDrugA(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-on-surface placeholder:text-outline outline-none transition-all" placeholder="e.g., Atorvastatin" type="text"/>
+                    <div className="relative">
+                      <div className="relative flex items-center">
+                        <span className="material-symbols-outlined absolute left-3 text-outline">search</span>
+                        <input 
+                          value={drugA} 
+                          onChange={e=>setDrugA(e.target.value)} 
+                          onFocus={()=>setShowA(true)}
+                          onBlur={() => setTimeout(() => setShowA(false), 200)}
+                          className="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-on-surface placeholder:text-outline outline-none transition-all" 
+                          placeholder="e.g., Atorvastatin" 
+                          type="text"
+                        />
+                      </div>
+                      {showA && suggestionsA.length > 0 && (
+                        <ul className="absolute left-0 right-0 mt-1 bg-white border border-[#DFE1E6] rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                          {suggestionsA.map((item, idx) => (
+                            <li 
+                              key={idx} 
+                              onClick={() => {
+                                setDrugA(item)
+                                setShowA(false)
+                              }}
+                              className="px-4 py-2.5 hover:bg-[#f3f0ff] cursor-pointer text-sm font-medium text-[#1e293b] border-b border-gray-100 last:border-b-0"
+                            >
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </div>
                   <div>
                     <label className="block font-label-md text-on-surface-variant mb-1 uppercase tracking-wider">Secondary Medication</label>
-                    <div className="relative flex items-center">
-                      <span className="material-symbols-outlined absolute left-3 text-outline">search</span>
-                      <input value={drugB} onChange={e=>setDrugB(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-on-surface placeholder:text-outline outline-none transition-all" placeholder="e.g., Clopidogrel" type="text"/>
+                    <div className="relative">
+                      <div className="relative flex items-center">
+                        <span className="material-symbols-outlined absolute left-3 text-outline">search</span>
+                        <input 
+                          value={drugB} 
+                          onChange={e=>setDrugB(e.target.value)} 
+                          onFocus={()=>setShowB(true)}
+                          onBlur={() => setTimeout(() => setShowB(false), 200)}
+                          className="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-on-surface placeholder:text-outline outline-none transition-all" 
+                          placeholder="e.g., Clopidogrel" 
+                          type="text"
+                        />
+                      </div>
+                      {showB && suggestionsB.length > 0 && (
+                        <ul className="absolute left-0 right-0 mt-1 bg-white border border-[#DFE1E6] rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                          {suggestionsB.map((item, idx) => (
+                            <li 
+                              key={idx} 
+                              onClick={() => {
+                                setDrugB(item)
+                                setShowB(false)
+                              }}
+                              className="px-4 py-2.5 hover:bg-[#f3f0ff] cursor-pointer text-sm font-medium text-[#1e293b] border-b border-gray-100 last:border-b-0"
+                            >
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </div>
                 </div>

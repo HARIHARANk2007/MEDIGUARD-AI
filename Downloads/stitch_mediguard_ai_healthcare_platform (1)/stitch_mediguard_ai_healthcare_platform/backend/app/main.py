@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import analyze, history
+from .routes import analyze, history, drugs
 from .models.database import initialize_database
 
 app = FastAPI(title="MediGuard AI Backend")
@@ -21,6 +21,7 @@ app.add_middleware(
 
 app.include_router(analyze.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
+app.include_router(drugs.router, prefix="/api")
 
 initialize_database()
 

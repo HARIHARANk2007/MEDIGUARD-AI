@@ -37,3 +37,15 @@ export async function fetchHistory(){
 	if(!resp.ok) throw new Error('Backend responded with ' + resp.status)
 	return await resp.json()
 }
+
+export async function searchDrugs(q){
+	if(!q || q.trim().length < 1) return []
+	try{
+		const resp = await fetch(`${BACKEND_URL}/api/drugs/search?q=${encodeURIComponent(q)}`)
+		if(!resp.ok) throw new Error('Backend responded with ' + resp.status)
+		return await resp.json()
+	}catch(e){
+		console.error('searchDrugs failed:', e)
+		return []
+	}
+}
