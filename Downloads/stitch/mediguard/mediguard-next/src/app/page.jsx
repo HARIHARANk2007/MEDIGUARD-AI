@@ -3,7 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 
 const html = `
-<div class="bg-background text-on-background font-body-md antialiased md:hidden overflow-x-hidden">
+<div class="bg-background text-on-background font-body-md antialiased min-h-screen w-full overflow-x-hidden">
 <!-- TopAppBar -->
 <header class="bg-surface dark:bg-inverse-surface w-full top-0 sticky border-b border-outline-variant dark:border-outline z-50">
 <div class="flex items-center justify-between px-margin-mobile py-base w-full max-w-container-max mx-auto">
