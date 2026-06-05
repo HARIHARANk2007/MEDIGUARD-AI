@@ -1,6 +1,7 @@
 from typing import Dict
 
 from .openfda_service import analyze_bleeding_risk
+from .llm_service import analyze_regimen_with_llm
 
 
 def analyze_regimen(payload) -> Dict[str, str]:
@@ -19,9 +20,24 @@ def analyze_regimen(payload) -> Dict[str, str]:
         if getattr(payload, 'drugB', None):
             raw_drugs.append(payload.drugB)
 
+    # Try dynamic LLM analysis first if API key is configured
+    llm_result = analyze_regimen_with_llm(
+        drugs=raw_drugs,
+        age=getattr(payload, 'age', None),
+        weight=getattr(payload, 'weight', None),
+        kidney=getattr(payload, 'kidney', None),
+        liver=getattr(payload, 'liver', None),
+        pregnancy=getattr(payload, 'pregnancy', False),
+        pediatric=getattr(payload, 'pediatric', False),
+        geriatric=getattr(payload, 'geriatric', False),
+    )
+    if llm_result:
+        return llm_result
+
     openfda_result = analyze_bleeding_risk(raw_drugs)
     if openfda_result:
         return openfda_result
+
 
     drugs = [d.lower() for d in (raw_drugs or []) if d]
     if len(drugs) < 2:
