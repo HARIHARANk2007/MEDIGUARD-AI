@@ -255,6 +255,17 @@ ${altSection}
           </div>
         </div>
 
+        {/* Hallucination Guard Warning */}
+        {response.hallucination_flagged && (
+          <div className="p-4 rounded-xl border border-red-200 bg-red-50 flex items-start gap-3 text-red-800">
+            <span className="material-symbols-outlined text-red-600 fill mt-0.5">warning</span>
+            <div>
+              <div className="font-bold text-sm">Hallucination Guard Warning</div>
+              <div className="text-xs mt-1 leading-relaxed">{response.hallucination_warning}</div>
+            </div>
+          </div>
+        )}
+
         {/* AI Summary */}
         <section className="bg-surface border border-outline-variant rounded-xl p-4">
           <h3 className="font-semibold text-on-surface">AI Summary</h3>

@@ -64,7 +64,7 @@ async def analyze_endpoint(
     current_user: dict = Depends(get_current_user),
 ):
     """Analyze a drug regimen and patient parameters. Requires valid auth token."""
-    out = analyze_regimen(payload)
+    out = analyze_regimen(payload, db)
 
     # Phase 6 — attach alternatives
     raw_drugs = list(payload.drugs or [])
@@ -81,7 +81,11 @@ async def analyze_endpoint(
         risk_score=out.get("riskScore"),
         explanation=out.get("explanation"),
         sources=out.get("sources"),
+        hallucination_flagged=out.get("hallucination_flagged", False),
+        hallucination_warning=out.get("hallucination_warning"),
+        citations=out.get("citations"),
     )
     db.add(history_row)
     db.commit()
     return AnalyzeResponse(**out)
+

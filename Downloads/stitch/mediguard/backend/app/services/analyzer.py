@@ -4,7 +4,7 @@ from .openfda_service import analyze_bleeding_risk
 from .llm_service import analyze_regimen_with_llm
 
 
-def analyze_regimen(payload) -> Dict[str, str]:
+def analyze_regimen(payload, db=None) -> Dict[str, str]:
     """Minimal deterministic analyzer used for local testing.
 
     Replace this with real clinical logic or an AI service call.
@@ -30,7 +30,9 @@ def analyze_regimen(payload) -> Dict[str, str]:
         pregnancy=getattr(payload, 'pregnancy', False),
         pediatric=getattr(payload, 'pediatric', False),
         geriatric=getattr(payload, 'geriatric', False),
+        db=db,
     )
+
     if llm_result:
         return llm_result
 

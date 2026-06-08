@@ -28,3 +28,7 @@ class AnalyzeResponse(BaseModel):
     explanation: Optional[str] = None
     sources: Optional[List[SourceItem]] = None
     alternatives: Optional[List[str]] = None
+    hallucination_flagged: Optional[bool] = False
+    hallucination_warning: Optional[str] = None
+    citations: Optional[List[str]] = None
+
