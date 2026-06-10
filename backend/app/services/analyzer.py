@@ -48,7 +48,9 @@ def analyze_regimen(payload, db=None) -> Dict[str, str]:
             "message": "Provide at least two medications for interaction analysis.",
             "riskScore": 0,
             "explanation": "Not enough medications provided",
-            "schedule": []
+            "schedule": [],
+            "evidence_level": "Low",
+            "evidence_score": 0.0
         }
 
     # example rule
@@ -61,7 +63,9 @@ def analyze_regimen(payload, db=None) -> Dict[str, str]:
             "schedule": [
                 {"drug": "Clopidogrel", "time": "Morning (8:00 AM)", "rationale": "Standard morning dosing to maintain antiplatelet effect throughout the day."},
                 {"drug": "Atorvastatin", "time": "Bedtime (10:00 PM)", "rationale": "Statins have peak efficacy when administered in the evening/bedtime due to nocturnal cholesterol synthesis, and separates administration from Clopidogrel to avoid metabolization bottlenecks."}
-            ]
+            ],
+            "evidence_level": "High",
+            "evidence_score": 0.85
         }
 
     if 'warfarin' in drugs and 'aspirin' in drugs:
@@ -73,7 +77,9 @@ def analyze_regimen(payload, db=None) -> Dict[str, str]:
             "schedule": [
                 {"drug": "Aspirin", "time": "Morning (8:00 AM)", "rationale": "Taken with breakfast to minimize GI upset."},
                 {"drug": "Warfarin", "time": "Evening (6:00 PM)", "rationale": "Standard evening dosing to allow routine morning INR blood tests to guide same-day dose adjustments."}
-            ]
+            ],
+            "evidence_level": "High",
+            "evidence_score": 0.92
         }
 
     if len(set(drugs)) != len(drugs):
@@ -82,7 +88,9 @@ def analyze_regimen(payload, db=None) -> Dict[str, str]:
             "message": "Duplicate medications detected — please verify entries.",
             "riskScore": 10,
             "explanation": "Same drug listed more than once",
-            "schedule": []
+            "schedule": [],
+            "evidence_level": "Low",
+            "evidence_score": 0.1
         }
 
     # Generic schedule generator fallback
@@ -103,5 +111,7 @@ def analyze_regimen(payload, db=None) -> Dict[str, str]:
         "message": "No major interactions detected (mock analysis).",
         "riskScore": 5,
         "explanation": "No significant interaction rules matched in the mock analyzer.",
-        "schedule": default_schedule
+        "schedule": default_schedule,
+        "evidence_level": "Low",
+        "evidence_score": 0.35
     }

@@ -248,11 +248,26 @@ ${scheduleSection}
       <main className="p-6 max-w-3xl mx-auto space-y-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h1 className="font-headline-lg">Interaction Analysis</h1>
-          <span className={`px-3 py-1 rounded-full font-semibold text-sm ${sevBadge}`}>
-            {response.severity?.toUpperCase()}
-          </span>
+          <div className="flex gap-2 shrink-0">
+            <span className={`px-3 py-1 rounded-full font-semibold text-sm ${sevBadge}`}>
+              {response.severity?.toUpperCase()}
+            </span>
+            {response.evidence_level && (
+              <span className={`px-3 py-1 rounded-full font-semibold text-xs border ${
+                response.evidence_level === 'High'
+                  ? 'bg-green-50 text-green-700 border-green-200'
+                  : response.evidence_level === 'Medium'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}>
+                {response.evidence_level === 'High' && '✓ Robust Evidence'}
+                {response.evidence_level === 'Medium' && 'ℹ Moderate Evidence'}
+                {response.evidence_level === 'Low' && '⚠️ Limited Evidence'}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Drug badges */}
@@ -261,6 +276,19 @@ ${scheduleSection}
             <div key={i} className="bg-surface-container-high text-on-surface-variant px-3 py-1.5 rounded-lg border border-outline-variant">{d}</div>
           ))}
         </div>
+
+        {/* Low Evidence Warning */}
+        {response.evidence_level === 'Low' && (
+          <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 flex items-start gap-3 text-amber-800">
+            <span className="material-symbols-outlined text-amber-600 fill mt-0.5">info</span>
+            <div>
+              <div className="font-bold text-sm">Limited Clinical Evidence Warning</div>
+              <div className="text-xs mt-1 leading-relaxed">
+                Interaction data for this combination is based on sparse reports or limited clinical research (evidence score: {response.evidence_score ?? 'N/A'}). Proceed with clinical caution.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Risk Index */}
         <div className="bg-surface p-4 rounded-xl border border-outline-variant">

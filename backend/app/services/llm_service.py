@@ -355,6 +355,23 @@ You MUST respond with a single, valid JSON object containing exactly the followi
                     for c in retrieved_chunks
                 ]
 
+            # 5. Evidence / Confidence Level Calculation based on RAG cosine similarity
+            max_score = 0.0
+            if retrieved_chunks:
+                scores = [float(c.get("score", 0.0)) for c in retrieved_chunks]
+                if scores:
+                    max_score = max(scores)
+            
+            if max_score >= 0.70:
+                evidence_level = "High"
+            elif max_score >= 0.45:
+                evidence_level = "Medium"
+            else:
+                evidence_level = "Low"
+            
+            result["evidence_level"] = evidence_level
+            result["evidence_score"] = float(round(max_score, 3))
+
             return result
     except HTTPError as e:
         print(f"LLM Service HTTP Error: {e.code} {e.reason}")

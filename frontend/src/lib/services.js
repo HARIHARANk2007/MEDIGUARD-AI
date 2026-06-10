@@ -64,11 +64,13 @@ function mockAnalyze(payload) {
       schedule: [
         { drug: "Clopidogrel", time: "Morning (8:00 AM)", rationale: "Standard morning dosing to maintain antiplatelet effect throughout the day." },
         { drug: "Atorvastatin", time: "Bedtime (10:00 PM)", rationale: "Statins have peak efficacy when administered in the evening/bedtime due to nocturnal cholesterol synthesis, and separates administration from Clopidogrel to avoid metabolization bottlenecks." }
-      ]
+      ],
+      evidence_level: "High",
+      evidence_score: 0.85
     }
   }
   if (drugs.length < 2) {
-    return { severity: 'info', message: 'Provide at least two medications for interaction analysis.', riskScore: 0, explanation: 'Not enough medications provided.', alternatives: [], schedule: [] }
+    return { severity: 'info', message: 'Provide at least two medications for interaction analysis.', riskScore: 0, explanation: 'Not enough medications provided.', alternatives: [], schedule: [], evidence_level: "Low", evidence_score: 0.0 }
   }
   
   // Generic schedule generator fallback
@@ -92,7 +94,9 @@ function mockAnalyze(payload) {
     riskScore: 5, 
     explanation: 'No significant interaction rules matched.', 
     alternatives: [],
-    schedule: default_schedule
+    schedule: default_schedule,
+    evidence_level: "Low",
+    evidence_score: 0.35
   }
 }
 

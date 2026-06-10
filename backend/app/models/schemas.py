@@ -38,4 +38,6 @@ class AnalyzeResponse(BaseModel):
     hallucination_warning: Optional[str] = None
     citations: Optional[List[str]] = None
     schedule: Optional[List[ScheduleItem]] = None
+    evidence_level: Optional[str] = "High"
+    evidence_score: Optional[float] = 1.0
 
