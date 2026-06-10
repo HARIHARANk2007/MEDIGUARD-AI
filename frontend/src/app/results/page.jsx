@@ -30,6 +30,7 @@ export default function AIResults() {
   const drugs = request?.drugs || [request?.drugA, request?.drugB].filter(Boolean)
   const sources = Array.isArray(response?.sources) ? response.sources : []
   const alternatives = Array.isArray(response?.alternatives) ? response.alternatives : []
+  const schedule = Array.isArray(response?.schedule) ? response.schedule : []
 
   // ── Explain handler ───────────────────────────────────────────────────────
   async function handleExplain(mode) {
@@ -107,6 +108,22 @@ export default function AIResults() {
         <ul class="recommendations-list">
           ${alternatives.map(a => `<li class="recommendation-item" style="--icon:'swap_horiz';">${a}</li>`).join('')}
         </ul>
+      </div>` : ''
+
+    const scheduleSection = schedule.length > 0 ? `
+      <div class="page-break-avoid" style="margin-top:28px;">
+        <div class="section-title">Recommended Clinical Administration Schedule</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
+          ${schedule.map(s => `
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #003d9b; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; font-size:14px; color:#003d9b;">${s.drug}</span>
+                <span style="background:#e0f2fe; color:#0369a1; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; text-transform:uppercase;">${s.time}</span>
+              </div>
+              <div style="font-size:12px; color:#475569; margin-top:6px; line-height:1.4;">${s.rationale}</div>
+            </div>
+          `).join('')}
+        </div>
       </div>` : ''
 
     const reportHtml = `<!DOCTYPE html>
@@ -200,6 +217,7 @@ ${response.explanation ? `<p style="font-size:13.5px;color:#334155;margin-bottom
   </div>
 </div>
 ${altSection}
+${scheduleSection}
 <div class="page-break-avoid" style="margin-top:28px;">
   <div class="section-title">Clinical Action Recommendations</div>
   <ul class="recommendations-list">${recommendations.map(r => `<li class="recommendation-item">${r}</li>`).join('')}</ul>
@@ -298,6 +316,67 @@ ${altSection}
               <span className="material-symbols-outlined text-[18px]">sentiment_satisfied</span>
               Explain Like a Patient
             </button>
+          </div>
+        </section>
+
+        {/* Medication Schedule Timeline */}
+        <section className="bg-white border border-outline-variant rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+            <span className="material-symbols-outlined text-[#003d9b]">schedule</span>
+            <div>
+              <h3 className="font-bold text-on-surface">Medication Schedule Timeline</h3>
+              <p className="text-xs text-[#64748b] mt-0.5">Recommended daily administration timeline to prevent absorption conflicts.</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { label: 'Morning (8:00 AM)', icon: 'light_mode', color: 'text-amber-500 bg-amber-50 border-amber-100' },
+              { label: 'Noon (12:00 PM)', icon: 'sunny', color: 'text-orange-500 bg-orange-50 border-orange-100' },
+              { label: 'Evening (6:00 PM)', icon: 'wb_twilight', color: 'text-indigo-500 bg-indigo-50 border-indigo-100' },
+              { label: 'Bedtime (10:00 PM)', icon: 'bedtime', color: 'text-purple-500 bg-purple-50 border-purple-100' }
+            ].map((slot) => {
+              const medsInSlot = schedule.filter(s => (s.time || '').toLowerCase().includes(slot.label.split(' ')[0].toLowerCase()))
+              const hasConflict = medsInSlot.length > 1 && (response.severity === 'Severe' || response.severity === 'High')
+
+              return (
+                <div key={slot.label} className="flex gap-4 items-start relative pl-2">
+                  {/* Timeline node */}
+                  <div className="flex flex-col items-center shrink-0 mt-1">
+                    <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${slot.color}`}>
+                      <span className="material-symbols-outlined text-[18px]">{slot.icon}</span>
+                    </div>
+                    <div className="w-0.5 h-16 bg-gray-100 last:hidden" />
+                  </div>
+
+                  {/* Slot content */}
+                  <div className="flex-1 min-w-0 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-[#475569] uppercase tracking-wider">{slot.label}</span>
+                      {hasConflict && (
+                        <span className="px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded text-[10px] font-bold uppercase flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">warning</span>
+                          Overlapping Window
+                        </span>
+                      )}
+                    </div>
+
+                    {medsInSlot.length > 0 ? (
+                      <div className="space-y-3">
+                        {medsInSlot.map((med, idx) => (
+                          <div key={idx} className="bg-white border border-[#e2e8f0] rounded-lg p-3 shadow-sm">
+                            <span className="inline-block px-2.5 py-1 bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd] rounded-md text-xs font-bold mb-1.5">{med.drug}</span>
+                            <p className="text-xs text-[#475569] leading-relaxed">{med.rationale}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-[#94a3b8] italic">No medications scheduled for this time slot.</p>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </section>
 

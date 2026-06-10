@@ -55,12 +55,45 @@ export async function login(email, password) {
 function mockAnalyze(payload) {
   const drugs = (payload.drugs || []).map(d => (d || '').toLowerCase())
   if (drugs.includes('atorvastatin') && drugs.includes('clopidogrel')) {
-    return { severity: 'high', message: 'High-risk interaction: Clopidogrel may reduce efficacy of Atorvastatin via CYP pathways.', riskScore: 80, explanation: 'CYP-mediated interaction may alter statin metabolism; monitor LFTs and consider dose adjustment.', alternatives: ['Rosuvastatin — CYP3A4-independent statin', 'Pravastatin — safe alternative'] }
+    return { 
+      severity: 'high', 
+      message: 'High-risk interaction: Clopidogrel may reduce efficacy of Atorvastatin via CYP pathways.', 
+      riskScore: 80, 
+      explanation: 'CYP-mediated interaction may alter statin metabolism; monitor LFTs and consider dose adjustment.', 
+      alternatives: ['Rosuvastatin — CYP3A4-independent statin', 'Pravastatin — safe alternative'],
+      schedule: [
+        { drug: "Clopidogrel", time: "Morning (8:00 AM)", rationale: "Standard morning dosing to maintain antiplatelet effect throughout the day." },
+        { drug: "Atorvastatin", time: "Bedtime (10:00 PM)", rationale: "Statins have peak efficacy when administered in the evening/bedtime due to nocturnal cholesterol synthesis, and separates administration from Clopidogrel to avoid metabolization bottlenecks." }
+      ]
+    }
   }
   if (drugs.length < 2) {
-    return { severity: 'info', message: 'Provide at least two medications for interaction analysis.', riskScore: 0, explanation: 'Not enough medications provided.', alternatives: [] }
+    return { severity: 'info', message: 'Provide at least two medications for interaction analysis.', riskScore: 0, explanation: 'Not enough medications provided.', alternatives: [], schedule: [] }
   }
-  return { severity: 'low', message: 'No major interactions detected for the provided regimen.', riskScore: 5, explanation: 'No significant interaction rules matched.', alternatives: [] }
+  
+  // Generic schedule generator fallback
+  const default_schedule = []
+  drugs.forEach(d => {
+    const d_title = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase()
+    if (d.includes("statin") || ["atorvastatin", "simvastatin", "rosuvastatin"].includes(d)) {
+      default_schedule.push({ drug: d_title, time: "Bedtime (10:00 PM)", rationale: "Peak cholesterol synthesis occurs overnight; statins are best taken at bedtime." })
+    } else if (d.includes("aspirin") || d.includes("ibuprofen")) {
+      default_schedule.push({ drug: d_title, time: "Morning (8:00 AM)", rationale: "Take in the morning with food to reduce gastrointestinal irritation." })
+    } else if (default_schedule.length === 0) {
+      default_schedule.push({ drug: d_title, time: "Morning (8:00 AM)", rationale: "Administer in the morning to establish routine daily dosing." })
+    } else {
+      default_schedule.push({ drug: d_title, time: "Evening (6:00 PM)", rationale: "Recommending evening dosing to space administration from other medications." })
+    }
+  })
+
+  return { 
+    severity: 'low', 
+    message: 'No major interactions detected for the provided regimen.', 
+    riskScore: 5, 
+    explanation: 'No significant interaction rules matched.', 
+    alternatives: [],
+    schedule: default_schedule
+  }
 }
 
 export async function analyzeInteraction(payload) {

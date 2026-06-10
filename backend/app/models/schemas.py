@@ -7,6 +7,12 @@ class SourceItem(BaseModel):
     section: str
 
 
+class ScheduleItem(BaseModel):
+    drug: str
+    time: str
+    rationale: str
+
+
 class AnalyzeRequest(BaseModel):
     # Accept either a list of `drugs` or individual `drugA`/`drugB` fields for convenience.
     drugs: Optional[List[str]] = None
@@ -31,4 +37,5 @@ class AnalyzeResponse(BaseModel):
     hallucination_flagged: Optional[bool] = False
     hallucination_warning: Optional[str] = None
     citations: Optional[List[str]] = None
+    schedule: Optional[List[ScheduleItem]] = None
 

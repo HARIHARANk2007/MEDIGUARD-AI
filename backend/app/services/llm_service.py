@@ -191,6 +191,13 @@ Citing Source Chunks:
 - For every clinical claim you make, you MUST cite the relevant source ID (e.g. [REF-WF-01]) from the Retrieved Vector Store Context Chunks.
 - Include a list of cited source IDs in the 'citations' array of your JSON response.
 
+Clinical Administration Schedule:
+- Provide a recommended daily schedule for administering each drug in the regimen.
+- Choose from these times: "Morning (8:00 AM)", "Noon (12:00 PM)", "Evening (6:00 PM)", "Bedtime (10:00 PM)".
+- Separate medications if they have absorption or competitive binding conflicts (e.g. calcium/antibiotics, iron, antacids). 
+- Schedule statins at bedtime (standard efficacy) and diuretics in the morning, etc.
+- In the JSON response, include a 'schedule' array with objects containing 'drug', 'time', and 'rationale' for each drug.
+
 You MUST respond with a single, valid JSON object containing exactly the following keys (do not include any markdown wrapping or text outside the JSON):
 {{
   "severity": "Severe" | "High" | "Moderate" | "Minor" | "Low" | "Safe",
@@ -202,6 +209,13 @@ You MUST respond with a single, valid JSON object containing exactly the followi
     {{
       "drug": "Name of Drug",
       "section": "Description of warning or source section"
+    }}
+  ],
+  "schedule": [
+    {{
+      "drug": "Name of Drug",
+      "time": "Morning (8:00 AM)" | "Noon (12:00 PM)" | "Evening (6:00 PM)" | "Bedtime (10:00 PM)",
+      "rationale": "Clinical reason for this timing recommendation"
     }}
   ]
 }}"""
@@ -238,9 +252,21 @@ You MUST respond with a single, valid JSON object containing exactly the followi
                             },
                             "required": ["drug", "section"]
                         }
+                    },
+                    "schedule": {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "drug": {"type": "STRING"},
+                                "time": {"type": "STRING"},
+                                "rationale": {"type": "STRING"}
+                            },
+                            "required": ["drug", "time", "rationale"]
+                        }
                     }
                 },
-                "required": ["severity", "message", "riskScore", "explanation", "sources", "citations"]
+                "required": ["severity", "message", "riskScore", "explanation", "sources", "citations", "schedule"]
             }
         }
     }
